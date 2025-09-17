@@ -1,26 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Todo } from "../types/todo";
 import { createTodo, updateTodo } from "./api";
+import { todoKeys } from "./queryKeys";
 
 export function useCreateTodo() {
-  const query = useQueryClient();
+  const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: Todo) => createTodo(data),
-    onMutate: () => {
-      console.log("Creating todo...");
-    },
-    onError: () => {
-      console.log("Error creating todo");
-    },
+    mutationFn: createTodo,
     onSuccess: () => {
-      console.log("Todo created successfully");
+      queryClient.invalidateQueries({ queryKey: todoKeys.all });
     },
-    onSettled: async (_, err) => {
-      // update cache or refetch queries
-      if (err) return console.log(err);
-
-      await query.invalidateQueries({ queryKey: ["todos-ids"] });
+    onError: (error) => {
+      console.error("Error creating todo:", error);
     },
   });
 }
@@ -29,12 +20,13 @@ export function useUpdateTodo() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: Todo) => await updateTodo(data),
-
-    onSettled: async (_, err, data) => {
-      if (err) return console.log(err);
-
-      await queryClient.invalidateQueries({ queryKey: ["todo", data?.id] });
+    mutationFn: updateTodo,
+    onSuccess: (_, updatedTodo) => {
+      queryClient.invalidateQueries({ queryKey: todoKeys.all });
+      queryClient.invalidateQueries({ queryKey: todoKeys.detail(updatedTodo.id) });
+    },
+    onError: (error) => {
+      console.error("Error updating todo:", error);
     },
   });
 }

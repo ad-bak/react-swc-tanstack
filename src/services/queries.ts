@@ -1,22 +1,19 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
-import { getTodo, getTodosIds } from "./api";
+import { useQuery } from "@tanstack/react-query";
+import { getTodos, getTodo } from "./api";
+import { todoKeys } from "./queryKeys";
 
-export function useTodosIds() {
+export function useTodos() {
   return useQuery({
-    queryKey: ["todos-ids"],
-    queryFn: getTodosIds,
+    queryKey: todoKeys.lists(),
+    queryFn: getTodos,
+    staleTime: 1 * 60 * 1000, // 1 minute is sufficient
   });
 }
 
-export function useTodos(ids: (number | undefined)[] | undefined) {
-  return useQueries({
-    queries: (ids ?? [])?.map((id) => {
-      return {
-        queryKey: ["todo", id],
-        queryFn: () => getTodo(id!),
-        // cache for 5 minutes
-        staleTime: 5 * 60 * 1000,
-      };
-    }),
+export function useTodo(id: number) {
+  return useQuery({
+    queryKey: todoKeys.detail(id),
+    queryFn: () => getTodo(id),
+    staleTime: 1 * 60 * 1000,
   });
 }
