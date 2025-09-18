@@ -21,6 +21,10 @@ export const updateTodo = async (data: Todo) => {
   await axiosInstance.put(`todos/${data.id}`, data);
 };
 
+export const deleteTodo = async (id: number) => {
+  await axiosInstance.delete(`todos/${id}`);
+};
+
 // import axios from "axios";
 // import type { Todo } from "../types/todo";
 
